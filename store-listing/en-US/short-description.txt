@@ -1,0 +1,1 @@
+Offline real-time YOLO object detection with private on-device video recording.

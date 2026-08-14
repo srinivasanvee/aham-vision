@@ -1,0 +1,45 @@
+default_platform(:android)
+
+platform :android do
+  desc "Run unit tests"
+  lane :test do
+    gradle(task: "test")
+  end
+
+  desc "Build a signed release AAB without uploading"
+  lane :build_release do
+    gradle(task: "bundle", build_type: "Release")
+    UI.success "AAB ready at app/build/outputs/bundle/release/app-release.aab"
+  end
+
+  desc "Build and upload a draft release to the Play internal track"
+  lane :deploy do
+    gradle(task: "bundle", build_type: "Release")
+    upload_to_play_store(
+      track: "internal",
+      aab: "app/build/outputs/bundle/release/app-release.aab",
+      json_key: ENV["PLAY_STORE_JSON_KEY_PATH"],
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      release_status: "draft"
+    )
+    UI.success "Uploaded to the Play internal track as a draft."
+  end
+
+  desc "Promote an existing release between Play tracks"
+  lane :promote do |options|
+    from_track = options[:from] || "internal"
+    to_track = options[:to] || "production"
+    upload_to_play_store(
+      track: from_track,
+      track_promote_to: to_track,
+      json_key: ENV["PLAY_STORE_JSON_KEY_PATH"],
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+end

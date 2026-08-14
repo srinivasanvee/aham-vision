@@ -1,0 +1,13 @@
+See the world through fast, private, on-device computer vision.
+
+aham-vision uses an embedded YOLO model to detect people, birds, animals, vehicles, and everyday objects in a live camera view. Detection works without an internet connection, and camera frames are never sent to a server.
+
+Features:
+• Real-time object detection with labels and confidence scores
+• Detection across the standard 80 COCO object categories
+• Video recording while live detection continues
+• Optional audio recording
+• Fully offline model inference
+• No account, advertising, analytics, or cloud upload
+
+Performance depends on your device's camera and processor. Recordings remain in the app-specific Movies directory on your device.

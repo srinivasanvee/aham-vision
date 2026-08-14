@@ -1,0 +1,2 @@
+package_name("com.sri.ahamvision")
+json_key_file(ENV["PLAY_STORE_JSON_KEY_PATH"])

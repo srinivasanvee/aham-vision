@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.AhamVision" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#73E7BD</item>
+        <item name="android:navigationBarColor">#080D0F</item>
+        <item name="android:statusBarColor">#080D0F</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>
