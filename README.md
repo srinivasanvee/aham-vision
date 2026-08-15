@@ -13,7 +13,7 @@ No network permission is declared, so inference cannot send frames off-device.
 
 ## Google Play releases
 
-The production package ID is `com.sri.ahamvision` and the Play listing name is **aham-vision**. Release versions are supplied through `VERSION_CODE` and `VERSION_NAME`; signing credentials come from an ignored `keystore.properties` file locally or GitHub Actions secrets in CI.
+The production package ID is `com.sri.aham.vision` and the Play listing name is **aham-vision**. Release versions are supplied through `VERSION_CODE` and `VERSION_NAME`; signing credentials come from an ignored `keystore.properties` file locally or GitHub Actions secrets in CI.
 
 Pushing a semantic version tag such as `v1.0.0` runs the same release pattern as the Aham Mobile app: GitHub Actions builds a signed AAB and Fastlane uploads a draft to the Play internal-testing track. See [docs/PLAY_STORE_RELEASE.md](docs/PLAY_STORE_RELEASE.md) for setup and launch requirements.
 

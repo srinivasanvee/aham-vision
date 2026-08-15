@@ -1,6 +1,6 @@
 # Google Play release checklist
 
-Package ID: `com.sri.ahamvision` (cannot be changed after the first Play upload)
+Package ID: `com.sri.aham.vision` (cannot be changed after the first Play upload)
 
 ## One-time Play Console setup
 
