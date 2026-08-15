@@ -18,8 +18,8 @@ android {
         applicationId = "com.sri.aham.vision"
         minSdk = 26
         targetSdk = 35
-        versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 2
-        versionName = System.getenv("VERSION_NAME") ?: "1.1.0"
+        versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 3
+        versionName = System.getenv("VERSION_NAME") ?: "1.1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
@@ -57,6 +57,9 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.2.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    // LiteRT's Play AI Delivery dependency otherwise selects WorkManager 2.9.1,
+    // whose older Room reflection metadata is broken by current R8 full-mode shrinking.
+    implementation("androidx.work:work-runtime:2.11.2")
     val cameraX = "1.4.1"
     implementation("androidx.camera:camera-camera2:$cameraX")
     implementation("androidx.camera:camera-lifecycle:$cameraX")
