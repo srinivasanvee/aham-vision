@@ -13,5 +13,8 @@ class HomeActivity : AppCompatActivity() {
         binding.objectDetectionTile.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
         }
+        binding.rideAlertTile.setOnClickListener {
+            startActivity(Intent(this, RideAlertSetupActivity::class.java))
+        }
     }
 }

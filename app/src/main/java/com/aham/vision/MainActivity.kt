@@ -1,12 +1,21 @@
 package com.aham.vision
 
 import android.Manifest
+import android.content.ContentValues
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Matrix
+import android.graphics.Paint
+import android.media.AudioManager
+import android.media.MediaScannerConnection
+import android.media.ToneGenerator
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.SystemClock
+import android.provider.MediaStore
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
@@ -35,6 +44,9 @@ class MainActivity : AppCompatActivity() {
     private var videoCapture: VideoCapture<Recorder>? = null
     private var recording: Recording? = null
     private var lastAnalysis = 0L
+    private var selectedTargets: Set<String> = emptySet()
+    private val lastAlertAt = mutableMapOf<String, Long>()
+    private var alertTone: ToneGenerator? = null
 
     private val permissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         if (result[Manifest.permission.CAMERA] == true) startCamera()
@@ -45,6 +57,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        selectedTargets = intent.getStringArrayExtra(EXTRA_ALERT_TARGETS)?.map(String::lowercase)?.toSet().orEmpty()
+        if (selectedTargets.isNotEmpty()) {
+            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            alertTone = ToneGenerator(AudioManager.STREAM_ALARM, 100)
+        }
         // TextureView composition guarantees our detection overlay is drawn above the camera preview.
         binding.preview.implementationMode = androidx.camera.view.PreviewView.ImplementationMode.COMPATIBLE
         binding.preview.scaleType = androidx.camera.view.PreviewView.ScaleType.FILL_CENTER
@@ -90,14 +107,83 @@ class MainActivity : AppCompatActivity() {
             val started = SystemClock.elapsedRealtime()
             val detections = yolo.detect(upright)
             val elapsed = SystemClock.elapsedRealtime() - started
+            val visibleDetections = if (selectedTargets.isEmpty()) detections else detections.filter { it.label.lowercase() in selectedTargets }
+            val alertDetection = nextAlert(visibleDetections)
+            val savedPhoto = alertDetection?.let { saveAlertPhoto(upright, visibleDetections) }
             runOnUiThread {
-                binding.overlay.update(detections, upright.width, upright.height)
-                if (recording == null) binding.status.text = "${detections.size} objects • ${elapsed}ms • offline"
+                binding.overlay.update(visibleDetections, upright.width, upright.height)
+                if (recording == null) {
+                    binding.status.text = if (selectedTargets.isEmpty()) {
+                        "${detections.size} objects • ${elapsed}ms • offline"
+                    } else {
+                        "Watching ${targetNames()} • ${visibleDetections.size} nearby • ${elapsed}ms"
+                    }
+                }
+                alertDetection?.let { playAlert(it, savedPhoto) }
             }
         } catch (e: Exception) {
             runOnUiThread { binding.status.text = "Inference error: ${e.message}" }
         } finally { image.close() }
     }
+
+    private fun targetNames(): String = selectedTargets.joinToString(", ") { if (it == "person") "human" else it }
+
+    private fun nextAlert(detections: List<Detection>): Detection? {
+        val now = SystemClock.elapsedRealtime()
+        val due = detections.firstOrNull { now - (lastAlertAt[it.label.lowercase()] ?: 0L) >= ALERT_COOLDOWN_MS } ?: return null
+        lastAlertAt[due.label.lowercase()] = now
+        return due
+    }
+
+    private fun playAlert(detection: Detection, savedPhoto: String?) {
+        alertTone?.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 600)
+        val target = if (detection.label == "person") "Human" else detection.label.replaceFirstChar(Char::uppercase)
+        val saved = savedPhoto?.let { " • saved $it" }.orEmpty()
+        binding.status.text = "⚠ $target detected • ${(detection.score * 100).toInt()}%$saved"
+    }
+
+    private fun saveAlertPhoto(source: Bitmap, detections: List<Detection>): String? = runCatching {
+        val annotated = source.copy(Bitmap.Config.ARGB_8888, true)
+        val canvas = Canvas(annotated)
+        val stroke = (annotated.width / 180f).coerceAtLeast(5f)
+        val textSize = (annotated.width / 24f).coerceAtLeast(28f)
+        val boxPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.YELLOW; style = Paint.Style.STROKE; strokeWidth = stroke }
+        val fillPaint = Paint().apply { color = Color.argb(235, 0, 0, 0); style = Paint.Style.FILL }
+        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; this.textSize = textSize; isFakeBoldText = true }
+        detections.forEach { detection ->
+            val left = detection.left * annotated.width
+            val top = detection.top * annotated.height
+            val right = detection.right * annotated.width
+            val bottom = detection.bottom * annotated.height
+            canvas.drawRect(left, top, right, bottom, boxPaint)
+            val label = "${if (detection.label == "person") "Human" else detection.label.replaceFirstChar(Char::uppercase)} ${(detection.score * 100).toInt()}%"
+            val labelHeight = textSize * 1.35f
+            val labelTop = (top - labelHeight).coerceAtLeast(0f)
+            canvas.drawRect(left, labelTop, left + textPaint.measureText(label) + stroke * 3, labelTop + labelHeight, fillPaint)
+            canvas.drawText(label, left + stroke, labelTop + textSize, textPaint)
+        }
+        val fileName = "ride_alert_${java.text.SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(System.currentTimeMillis())}.jpg"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val values = ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
+                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/aham-vision/Ride Alerts")
+                put(MediaStore.Images.Media.IS_PENDING, 1)
+            }
+            val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: error("Could not create photo")
+            contentResolver.openOutputStream(uri)?.use { annotated.compress(Bitmap.CompressFormat.JPEG, 94, it) }
+                ?: error("Could not write photo")
+            values.clear(); values.put(MediaStore.Images.Media.IS_PENDING, 0)
+            contentResolver.update(uri, values, null, null)
+        } else {
+            val folder = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Ride Alerts").apply { mkdirs() }
+            val file = File(folder, fileName)
+            file.outputStream().use { annotated.compress(Bitmap.CompressFormat.JPEG, 94, it) }
+            MediaScannerConnection.scanFile(this, arrayOf(file.absolutePath), arrayOf("image/jpeg"), null)
+        }
+        annotated.recycle()
+        fileName
+    }.getOrNull()
 
     private fun toggleRecording() {
         recording?.let { it.stop(); recording = null; binding.record.text = "Record"; return }
@@ -118,6 +204,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        recording?.stop(); detector?.close(); analysisExecutor.shutdown(); super.onDestroy()
+        recording?.stop(); detector?.close(); alertTone?.release(); analysisExecutor.shutdown(); super.onDestroy()
+    }
+
+    companion object {
+        const val EXTRA_ALERT_TARGETS = "alert_targets"
+        private const val ALERT_COOLDOWN_MS = 4_000L
     }
 }

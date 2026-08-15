@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="#080D0F" android:orientation="vertical"
+    android:paddingHorizontal="24dp" android:paddingTop="56dp" android:paddingBottom="24dp">
+
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="@string/choose_targets" android:textColor="#FFFFFFFF"
+        android:textSize="28sp" android:textStyle="bold" />
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="10dp" android:text="@string/choose_targets_description"
+        android:textColor="#FFB8C4C2" android:textSize="16sp" />
+
+    <com.google.android.material.checkbox.MaterialCheckBox android:id="@+id/bird"
+        android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="28dp"
+        android:checked="true" android:text="@string/bird" android:textColor="#FFFFFFFF" android:textSize="18sp" />
+    <com.google.android.material.checkbox.MaterialCheckBox android:id="@+id/deer"
+        android:layout_width="match_parent" android:layout_height="56dp"
+        android:checked="true" android:text="@string/deer" android:textColor="#FFFFFFFF" android:textSize="18sp" />
+    <com.google.android.material.checkbox.MaterialCheckBox android:id="@+id/person"
+        android:layout_width="match_parent" android:layout_height="56dp"
+        android:checked="true" android:text="@string/human" android:textColor="#FFFFFFFF" android:textSize="18sp" />
+
+    <com.google.android.material.button.MaterialButton android:id="@+id/startTracker"
+        android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="32dp"
+        android:text="@string/start_tracker" android:textAllCaps="false" android:textSize="17sp" />
+</LinearLayout>

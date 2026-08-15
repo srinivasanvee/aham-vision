@@ -18,8 +18,8 @@ android {
         applicationId = "com.sri.aham.vision"
         minSdk = 26
         targetSdk = 35
-        versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 5
-        versionName = System.getenv("VERSION_NAME") ?: "1.1.3"
+        versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 6
+        versionName = System.getenv("VERSION_NAME") ?: "1.2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {

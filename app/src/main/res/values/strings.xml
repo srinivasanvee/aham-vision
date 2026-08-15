@@ -5,4 +5,13 @@
     <string name="object_detection">Object Detection</string>
     <string name="object_detection_description">Detect people, animals, birds, vehicles, and everyday objects live and offline.</string>
     <string name="open_feature">Open camera</string>
+    <string name="ride_alert">Ride Alert</string>
+    <string name="ride_alert_description">Choose wildlife or people to watch for, hear an alert, and automatically capture a photo.</string>
+    <string name="configure_alerts">Choose alert targets</string>
+    <string name="choose_targets">What should Ride Alert watch for?</string>
+    <string name="choose_targets_description">Detection stays offline. An annotated photo is saved whenever a selected target triggers an alert. Mount the phone securely and make selections before beginning your ride.</string>
+    <string name="bird">Bird</string>
+    <string name="deer">Deer</string>
+    <string name="human">Human</string>
+    <string name="start_tracker">Start Ride Alert</string>
 </resources>

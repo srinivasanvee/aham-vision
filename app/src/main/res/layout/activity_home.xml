@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:background="#080D0F" android:orientation="vertical"
     android:paddingHorizontal="24dp" android:paddingTop="56dp" android:paddingBottom="24dp">
@@ -13,8 +14,7 @@
         android:id="@+id/objectDetectionTile" android:layout_width="match_parent" android:layout_height="wrap_content"
         android:layout_marginTop="32dp" android:clickable="true" android:focusable="true"
         android:foreground="?attr/selectableItemBackground" app:cardBackgroundColor="#FF142023"
-        app:cardCornerRadius="24dp" app:strokeColor="#5573E7BD" app:strokeWidth="1dp"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+        app:cardCornerRadius="24dp" app:strokeColor="#5573E7BD" app:strokeWidth="1dp">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:padding="24dp">
             <ImageView android:layout_width="64dp" android:layout_height="64dp"
@@ -28,6 +28,25 @@
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:layout_marginTop="20dp" android:text="@string/open_feature"
                 android:textColor="#FF73E7BD" android:textSize="15sp" android:textStyle="bold" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/rideAlertTile" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="16dp" android:clickable="true" android:focusable="true"
+        android:foreground="?attr/selectableItemBackground" app:cardBackgroundColor="#FF142023"
+        app:cardCornerRadius="24dp" app:strokeColor="#88FFD54F" app:strokeWidth="1dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="24dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="@string/ride_alert" android:textColor="#FFFFFFFF"
+                android:textSize="22sp" android:textStyle="bold" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" android:text="@string/ride_alert_description"
+                android:textColor="#FFB8C4C2" android:textSize="15sp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginTop="20dp" android:text="@string/configure_alerts"
+                android:textColor="#FFFFD54F" android:textSize="15sp" android:textStyle="bold" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 </LinearLayout>
