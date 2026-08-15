@@ -36,4 +36,24 @@ class YoloDetectorTest {
         assertEquals(.25f, result.single().left, .001f)
         assertEquals(.75f, result.single().right, .001f)
     }
+
+    @Test fun decodesNormalizedChannelsFirstCoordinatesFromBundledModelFormat() {
+        val labels = listOf("person", "bus")
+        val values = FloatArray(6)
+        values[0] = .5f
+        values[1] = .5f
+        values[2] = .5f
+        values[3] = .5f
+        values[4] = .9f
+
+        val result = YoloDetector.decode(values, intArrayOf(1, 6, 1), labels, .25f,
+            1280, 720, 640, 640, .5f, 0f, 140f)
+
+        assertEquals(1, result.size)
+        assertEquals("person", result.single().label)
+        assertEquals(.25f, result.single().left, .001f)
+        assertEquals(.75f, result.single().right, .001f)
+        assertEquals(.055f, result.single().top, .002f)
+        assertEquals(.944f, result.single().bottom, .002f)
+    }
 }

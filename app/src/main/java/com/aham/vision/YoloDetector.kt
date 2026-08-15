@@ -123,7 +123,13 @@ class YoloDetector(context: Context) : AutoCloseable {
                     if (classScore > score) { score = classScore; bestClass = classIndex }
                 }
                 if (score < threshold) continue
-                val cx = value(0, i); val cy = value(1, i); val width = value(2, i); val height = value(3, i)
+                var cx = value(0, i); var cy = value(1, i); var width = value(2, i); var height = value(3, i)
+                // Ultralytics LiteRT exports may emit xywh normalized to 0..1 even though
+                // older TFLite exports use model-pixel coordinates.
+                if (max(max(kotlin.math.abs(cx), kotlin.math.abs(cy)), max(kotlin.math.abs(width), kotlin.math.abs(height))) <= 2f) {
+                    cx *= inputWidth; width *= inputWidth
+                    cy *= inputHeight; height *= inputHeight
+                }
                 val left = ((cx - width / 2f - padX) / scale / sourceWidth).coerceIn(0f, 1f)
                 val top = ((cy - height / 2f - padY) / scale / sourceHeight).coerceIn(0f, 1f)
                 val right = ((cx + width / 2f - padX) / scale / sourceWidth).coerceIn(0f, 1f)
