@@ -12,13 +12,26 @@ class DetectionOverlay(context: Context, attrs: AttributeSet?) : View(context, a
     private val fillPaint = Paint().apply { color = Color.argb(210, 8, 13, 15); style = Paint.Style.FILL }
     private val textPaint = Paint().apply { color = Color.WHITE; textSize = 34f; isAntiAlias = true }
     @Volatile private var detections: List<Detection> = emptyList()
+    @Volatile private var sourceWidth = 1
+    @Volatile private var sourceHeight = 1
 
-    fun update(items: List<Detection>) { detections = items; postInvalidate() }
+    fun update(items: List<Detection>, imageWidth: Int, imageHeight: Int) {
+        detections = items
+        sourceWidth = imageWidth.coerceAtLeast(1)
+        sourceHeight = imageHeight.coerceAtLeast(1)
+        postInvalidate()
+    }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        val scale = maxOf(width.toFloat() / sourceWidth, height.toFloat() / sourceHeight)
+        val offsetX = (width - sourceWidth * scale) / 2f
+        val offsetY = (height - sourceHeight * scale) / 2f
         detections.forEach { d ->
-            val l = d.left * width; val t = d.top * height; val r = d.right * width; val b = d.bottom * height
+            val l = offsetX + d.left * sourceWidth * scale
+            val t = offsetY + d.top * sourceHeight * scale
+            val r = offsetX + d.right * sourceWidth * scale
+            val b = offsetY + d.bottom * sourceHeight * scale
             canvas.drawRect(l, t, r, b, boxPaint)
             val label = "${d.label} ${(d.score * 100).toInt()}%"
             val tw = textPaint.measureText(label)

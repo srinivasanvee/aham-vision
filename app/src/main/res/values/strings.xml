@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">aham-vision</string>
+    <string name="home_title">Vision tools</string>
+    <string name="home_subtitle">Choose a feature to begin. More on-device tools can be added here.</string>
+    <string name="object_detection">Object Detection</string>
+    <string name="object_detection_description">Detect people, animals, birds, vehicles, and everyday objects live and offline.</string>
+    <string name="open_feature">Open camera</string>
 </resources>

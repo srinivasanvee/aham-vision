@@ -63,7 +63,6 @@ class MainActivity : AppCompatActivity() {
             val preview = Preview.Builder().build().also { it.surfaceProvider = binding.preview.surfaceProvider }
             val analysis = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                 .build().also { useCase -> useCase.setAnalyzer(analysisExecutor, ::analyze) }
             val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.FHD)).build()
             videoCapture = VideoCapture.withOutput(recorder)
@@ -80,16 +79,14 @@ class MainActivity : AppCompatActivity() {
         if (yolo == null || now - lastAnalysis < 90L) { image.close(); return }
         lastAnalysis = now
         try {
-            val plane = image.planes[0]
-            val bitmap = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ARGB_8888)
-            plane.buffer.rewind(); bitmap.copyPixelsFromBuffer(plane.buffer)
+            val bitmap = image.toBitmap()
             val rotation = image.imageInfo.rotationDegrees.toFloat()
             val upright = if (rotation == 0f) bitmap else Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, Matrix().apply { postRotate(rotation) }, true)
             val started = SystemClock.elapsedRealtime()
             val detections = yolo.detect(upright)
             val elapsed = SystemClock.elapsedRealtime() - started
             runOnUiThread {
-                binding.overlay.update(detections)
+                binding.overlay.update(detections, upright.width, upright.height)
                 if (recording == null) binding.status.text = "${detections.size} objects • ${elapsed}ms • offline"
             }
         } catch (e: Exception) {
