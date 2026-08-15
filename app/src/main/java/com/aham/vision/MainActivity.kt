@@ -45,7 +45,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        // TextureView composition guarantees our detection overlay is drawn above the camera preview.
+        binding.preview.implementationMode = androidx.camera.view.PreviewView.ImplementationMode.COMPATIBLE
         binding.preview.scaleType = androidx.camera.view.PreviewView.ScaleType.FILL_CENTER
+        binding.overlay.bringToFront()
+        binding.status.bringToFront()
+        binding.record.bringToFront()
         binding.record.setOnClickListener { toggleRecording() }
         analysisExecutor.execute {
             runCatching { YoloDetector(applicationContext) }

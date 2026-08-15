@@ -67,7 +67,8 @@ class YoloDetector(context: Context) : AutoCloseable {
         }
         inputBuffers[0].writeFloat(input)
         model.run(inputBuffers, outputBuffers)
-        return decode(outputBuffers[0].readFloat(), outputShape, labels, threshold, source.width, source.height, scale, padX, padY)
+        return decode(outputBuffers[0].readFloat(), outputShape, labels, threshold, source.width, source.height,
+            inputWidth, inputHeight, scale, padX, padY)
     }
 
     override fun close() {
@@ -80,8 +81,35 @@ class YoloDetector(context: Context) : AutoCloseable {
         private const val MODEL_NAME = "yolo26n_w8a32.tflite"
 
         internal fun decode(output: FloatArray, shape: IntArray, labels: List<String>, threshold: Float,
-            sourceWidth: Int, sourceHeight: Int, scale: Float, padX: Float, padY: Float): List<Detection> {
+            sourceWidth: Int, sourceHeight: Int, inputWidth: Int, inputHeight: Int,
+            scale: Float, padX: Float, padY: Float): List<Detection> {
             require(shape.size == 3 && shape[0] == 1) { "Unsupported YOLO output: ${shape.contentToString()}" }
+            // Newer Ultralytics exports can include NMS and return [1, detections, 6]:
+            // x1, y1, x2, y2, confidence, class index.
+            if (shape[2] in 6..7) {
+                val rowLength = shape[2]
+                val found = ArrayList<Detection>()
+                for (i in 0 until shape[1]) {
+                    val base = i * rowLength
+                    val score = output[base + 4]
+                    val classIndex = output[base + 5].toInt()
+                    if (score < threshold || classIndex !in labels.indices) continue
+                    var left = output[base]
+                    var top = output[base + 1]
+                    var right = output[base + 2]
+                    var bottom = output[base + 3]
+                    if (max(max(kotlin.math.abs(left), kotlin.math.abs(top)), max(kotlin.math.abs(right), kotlin.math.abs(bottom))) <= 2f) {
+                        left *= inputWidth; right *= inputWidth
+                        top *= inputHeight; bottom *= inputHeight
+                    }
+                    left = ((left - padX) / scale / sourceWidth).coerceIn(0f, 1f)
+                    top = ((top - padY) / scale / sourceHeight).coerceIn(0f, 1f)
+                    right = ((right - padX) / scale / sourceWidth).coerceIn(0f, 1f)
+                    bottom = ((bottom - padY) / scale / sourceHeight).coerceIn(0f, 1f)
+                    if (right > left && bottom > top) found += Detection(left, top, right, bottom, score, labels[classIndex])
+                }
+                return found.sortedByDescending(Detection::score).take(30)
+            }
             val channelsFirst = shape[1] <= labels.size + 5
             val channels = if (channelsFirst) shape[1] else shape[2]
             val candidates = if (channelsFirst) shape[2] else shape[1]

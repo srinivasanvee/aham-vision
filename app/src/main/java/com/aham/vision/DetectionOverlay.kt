@@ -8,9 +8,9 @@ import android.util.AttributeSet
 import android.view.View
 
 class DetectionOverlay(context: Context, attrs: AttributeSet?) : View(context, attrs) {
-    private val boxPaint = Paint().apply { color = Color.rgb(115, 231, 189); style = Paint.Style.STROKE; strokeWidth = 5f }
-    private val fillPaint = Paint().apply { color = Color.argb(210, 8, 13, 15); style = Paint.Style.FILL }
-    private val textPaint = Paint().apply { color = Color.WHITE; textSize = 34f; isAntiAlias = true }
+    private val boxPaint = Paint().apply { color = Color.YELLOW; style = Paint.Style.STROKE; strokeWidth = 7f; isAntiAlias = true }
+    private val fillPaint = Paint().apply { color = Color.argb(235, 0, 0, 0); style = Paint.Style.FILL }
+    private val textPaint = Paint().apply { color = Color.WHITE; textSize = 38f; isAntiAlias = true; isFakeBoldText = true }
     @Volatile private var detections: List<Detection> = emptyList()
     @Volatile private var sourceWidth = 1
     @Volatile private var sourceHeight = 1
