@@ -15,6 +15,13 @@
         android:text="Loading offline model…" android:textColor="#FFFFFFFF" android:textSize="14sp"
         app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent" />
 
+    <TextView android:id="@+id/objectCount" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_marginTop="16dp" android:background="#E6000000"
+        android:paddingHorizontal="24dp" android:paddingVertical="12dp" android:text="0"
+        android:textColor="#FFFFD54F" android:textSize="54sp" android:textStyle="bold" android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/status" app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <Button android:id="@+id/record" android:layout_width="wrap_content" android:layout_height="56dp"
         android:layout_marginBottom="32dp" android:text="Record" android:textAllCaps="false"
         app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent"

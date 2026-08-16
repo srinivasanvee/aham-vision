@@ -16,5 +16,8 @@ class HomeActivity : AppCompatActivity() {
         binding.rideAlertTile.setOnClickListener {
             startActivity(Intent(this, RideAlertSetupActivity::class.java))
         }
+        binding.objectCounterTile.setOnClickListener {
+            startActivity(Intent(this, ObjectCounterSetupActivity::class.java))
+        }
     }
 }

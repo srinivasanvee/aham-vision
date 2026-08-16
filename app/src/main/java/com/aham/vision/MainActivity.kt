@@ -16,6 +16,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.SystemClock
 import android.provider.MediaStore
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
@@ -45,6 +46,8 @@ class MainActivity : AppCompatActivity() {
     private var recording: Recording? = null
     private var lastAnalysis = 0L
     private var selectedTargets: Set<String> = emptySet()
+    private var countTarget: String? = null
+    private val countTracker = ObjectCountTracker()
     private val lastAlertAt = mutableMapOf<String, Long>()
     private var alertTone: ToneGenerator? = null
 
@@ -58,15 +61,21 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         selectedTargets = intent.getStringArrayExtra(EXTRA_ALERT_TARGETS)?.map(String::lowercase)?.toSet().orEmpty()
+        countTarget = intent.getStringExtra(EXTRA_COUNT_TARGET)?.lowercase()
         if (selectedTargets.isNotEmpty()) {
             window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             alertTone = ToneGenerator(AudioManager.STREAM_ALARM, 100)
+        }
+        if (countTarget != null) {
+            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            binding.objectCount.visibility = View.VISIBLE
         }
         // TextureView composition guarantees our detection overlay is drawn above the camera preview.
         binding.preview.implementationMode = androidx.camera.view.PreviewView.ImplementationMode.COMPATIBLE
         binding.preview.scaleType = androidx.camera.view.PreviewView.ScaleType.FILL_CENTER
         binding.overlay.bringToFront()
         binding.status.bringToFront()
+        binding.objectCount.bringToFront()
         binding.record.bringToFront()
         binding.record.setOnClickListener { toggleRecording() }
         analysisExecutor.execute {
@@ -107,18 +116,24 @@ class MainActivity : AppCompatActivity() {
             val started = SystemClock.elapsedRealtime()
             val detections = yolo.detect(upright)
             val elapsed = SystemClock.elapsedRealtime() - started
-            val visibleDetections = if (selectedTargets.isEmpty()) detections else detections.filter { it.label.lowercase() in selectedTargets }
-            val alertDetection = nextAlert(visibleDetections)
+            val visibleDetections = when {
+                countTarget != null -> ObjectCounter.matching(detections, countTarget.orEmpty())
+                selectedTargets.isNotEmpty() -> detections.filter { it.label.lowercase() in selectedTargets }
+                else -> detections
+            }
+            val stableCount = if (countTarget != null) countTracker.update(visibleDetections.size) else null
+            val alertDetection = if (selectedTargets.isNotEmpty()) nextAlert(visibleDetections) else null
             val savedPhoto = alertDetection?.let { saveAlertPhoto(upright, visibleDetections) }
             runOnUiThread {
                 binding.overlay.update(visibleDetections, upright.width, upright.height)
                 if (recording == null) {
-                    binding.status.text = if (selectedTargets.isEmpty()) {
-                        "${detections.size} objects • ${elapsed}ms • offline"
-                    } else {
-                        "Watching ${targetNames()} • ${visibleDetections.size} nearby • ${elapsed}ms"
+                    binding.status.text = when {
+                        countTarget != null -> "Counting ${countDisplayName()} • ${elapsed}ms • offline"
+                        selectedTargets.isNotEmpty() -> "Watching ${targetNames()} • ${visibleDetections.size} nearby • ${elapsed}ms"
+                        else -> "${detections.size} objects • ${elapsed}ms • offline"
                     }
                 }
+                stableCount?.let { binding.objectCount.text = it.toString() }
                 alertDetection?.let { playAlert(it, savedPhoto) }
             }
         } catch (e: Exception) {
@@ -127,6 +142,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun targetNames(): String = selectedTargets.joinToString(", ") { if (it == "person") "human" else it }
+
+    private fun countDisplayName(): String = when (countTarget) {
+        "sports ball" -> "ping-pong / sports balls"
+        "person" -> "people"
+        else -> countTarget.orEmpty()
+    }
 
     private fun nextAlert(detections: List<Detection>): Detection? {
         val now = SystemClock.elapsedRealtime()
@@ -209,6 +230,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_ALERT_TARGETS = "alert_targets"
+        const val EXTRA_COUNT_TARGET = "count_target"
         private const val ALERT_COOLDOWN_MS = 4_000L
     }
 }

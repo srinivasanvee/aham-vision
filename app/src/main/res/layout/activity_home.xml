@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="match_parent"
-    android:background="#080D0F" android:orientation="vertical"
-    android:paddingHorizontal="24dp" android:paddingTop="56dp" android:paddingBottom="24dp">
+    android:background="#080D0F" android:fillViewport="true">
+
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="vertical" android:paddingHorizontal="24dp"
+    android:paddingTop="56dp" android:paddingBottom="24dp">
 
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
         android:text="@string/home_title" android:textColor="#FFFFFFFF" android:textSize="32sp" android:textStyle="bold" />
@@ -32,6 +35,25 @@
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/objectCounterTile" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="16dp" android:clickable="true" android:focusable="true"
+        android:foreground="?attr/selectableItemBackground" app:cardBackgroundColor="#FF142023"
+        app:cardCornerRadius="24dp" app:strokeColor="#8873B7FF" app:strokeWidth="1dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="24dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="@string/object_counter" android:textColor="#FFFFFFFF"
+                android:textSize="22sp" android:textStyle="bold" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" android:text="@string/object_counter_description"
+                android:textColor="#FFB8C4C2" android:textSize="15sp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginTop="20dp" android:text="@string/configure_counter"
+                android:textColor="#FF73B7FF" android:textSize="15sp" android:textStyle="bold" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/rideAlertTile" android:layout_width="match_parent" android:layout_height="wrap_content"
         android:layout_marginTop="16dp" android:clickable="true" android:focusable="true"
         android:foreground="?attr/selectableItemBackground" app:cardBackgroundColor="#FF142023"
@@ -50,3 +72,4 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 </LinearLayout>
+</ScrollView>

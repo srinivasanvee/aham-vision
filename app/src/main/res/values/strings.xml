@@ -14,4 +14,12 @@
     <string name="deer">Deer</string>
     <string name="human">Human</string>
     <string name="start_tracker">Start Ride Alert</string>
+    <string name="object_counter">Object Counter</string>
+    <string name="object_counter_description">Choose an object and count matching items live with stable on-device detection.</string>
+    <string name="configure_counter">Choose an object</string>
+    <string name="counter_choose_title">What do you want to count?</string>
+    <string name="counter_choose_description">Select one of the 80 object types recognized by the offline model, then point the camera at the group.</string>
+    <string name="object_to_count">Object type</string>
+    <string name="counter_model_note">For ping-pong balls, select “Ping-pong / sports ball.” Very small or overlapping balls may require a closer, well-lit view.</string>
+    <string name="start_counting">Start Object Counter</string>
 </resources>
